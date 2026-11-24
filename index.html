@@ -1,0 +1,2765 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="narrative">
+  <meta name="design-style" content="carbon">
+  <title>Métodos de Búsqueda en Estructura de Datos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+
+      /* Page and surfaces (Carbon) */
+      --background: #ffffff;
+      --surface-container-low: #f4f4f4;
+      --surface-container: #f4f4f4;
+      --surface-container-high: #e0e0e0;
+
+      /* Ink */
+      --on-surface: #161616;
+      --on-surface-variant: #525252;
+
+      /* Rules */
+      --outline: #8d8d8d;
+      --outline-variant: #e0e0e0;
+
+      /* Accents */
+      --primary: #0f62fe;
+      --primary-hover: #0353e9;
+      --primary-ink: #0043ce;
+      --on-primary: #ffffff;
+      --primary-container: #d0e2ff;
+      --on-primary-container: #161616;
+      --secondary: #6f6f6f;
+      --tertiary: #198038;
+      --error: #da1e28;
+      --on-error: #ffffff;
+
+      /* Semantic & code tokens */
+      --positive: #198038;
+      --positive-container: #defbe6;
+      --warning: #8e6a00;
+      --warning-container: #fcf4d6;
+      --error-container: #fff1f1;
+      --hash-accent: #6929c4;
+      --hash-container: #e8daff;
+      --focus: #0f62fe;
+
+      --code-bg: #161616;
+      --code-header-bg: #262626;
+      --code-border: #393939;
+      --code-text: #f4f4f4;
+      --code-muted: #a8a8a8;
+      --code-kw: #78a9ff;
+      --code-type: #3ddbd9;
+      --code-str: #a7f0ba;
+      --code-num: #d4bbff;
+
+      /* Data series */
+      --data-1: #0f62fe;
+      --data-2: #6929c4;
+      --data-3: #005d5d;
+      --data-4: #9f1853;
+      --data-context: #8d8d8d;
+
+      /* Fonts */
+      --font-headline: 'IBM Plex Sans', sans-serif;
+      --font-body: 'IBM Plex Sans', sans-serif;
+      --font-label: 'IBM Plex Mono', monospace;
+
+      /* Shape */
+      --rounded: 0.125rem;
+      --rounded-lg: 0.25rem;
+      --rounded-full: 0.75rem;
+
+      /* Style effects */
+      --shadow-1: 0 2px 6px rgb(0 0 0 / 0.1);
+      --shadow-2: 0 4px 12px rgb(0 0 0 / 0.12);
+      --rule: 1px solid var(--outline-variant);
+      --field-rule: 1px solid var(--outline);
+      --indicator: 2px solid var(--primary);
+      --indicator-tertiary: 2px solid var(--tertiary);
+      --indicator-hash: 2px solid var(--hash-accent);
+
+      /* Type scale (Narrative) */
+      --display-size: clamp(2.25rem, 1.35rem + 3.4vw, 3.75rem);
+      --headline-size: clamp(1.625rem, 1.2rem + 1.5vw, 2.25rem);
+      --subhead-size: clamp(1.125rem, 1.02rem + 0.45vw, 1.375rem);
+      --body-size: clamp(1rem, 0.96rem + 0.18vw, 1.125rem);
+      --label-size: 0.75rem;
+
+      /* Spacing scale (4pt base) */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2.5rem;
+      --space-2xl: 4rem;
+      --space-3xl: 6rem;
+
+      /* Motion */
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --dur-micro: 120ms;
+      --dur-short: 220ms;
+      --dur-long: 420ms;
+    }
+
+    /* Base reset */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      overflow-x: clip;
+      margin: 0;
+      padding: 0;
+      background-color: var(--background);
+      color: var(--on-surface);
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      line-height: 1.55;
+      scroll-behavior: smooth;
+    }
+    header { position: static !important; }
+
+    .page-grid {
+      display: grid;
+      gap: var(--space-2xl);
+      padding: var(--space-xl) var(--space-lg) var(--space-3xl);
+      max-width: 1200px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    .page-grid * { min-width: 0; }
+
+    /* Focus rings (Accessibility 4.7) */
+    :focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* Typography */
+    .label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--on-surface-variant);
+      margin: 0;
+    }
+
+    .display-title {
+      font-family: var(--font-headline);
+      font-size: var(--display-size);
+      font-weight: 300;
+      line-height: 1.15;
+      letter-spacing: 0;
+      margin: var(--space-sm) 0 var(--space-md);
+      color: var(--on-surface);
+      max-width: 24ch;
+    }
+    .display-title strong { font-weight: 600; }
+
+    .section-title {
+      font-family: var(--font-headline);
+      font-size: var(--headline-size);
+      font-weight: 300;
+      line-height: 1.2;
+      margin: var(--space-xs) 0 0;
+      color: var(--on-surface);
+    }
+    .section-title strong { font-weight: 600; }
+
+    .subhead {
+      font-family: var(--font-headline);
+      font-size: var(--subhead-size);
+      font-weight: 600;
+      line-height: 1.3;
+      margin: 0 0 var(--space-sm);
+      color: var(--on-surface);
+    }
+
+    .prose {
+      max-width: 65ch;
+      color: var(--on-surface);
+      margin: 0 0 var(--space-md);
+    }
+    .prose-muted {
+      max-width: 65ch;
+      color: var(--on-surface-variant);
+      font-size: 0.9375rem;
+      margin: 0;
+    }
+
+    .mono-inline {
+      font-family: var(--font-label);
+      font-size: 0.875em;
+      background: var(--surface-container);
+      padding: 0.1em 0.35em;
+      border-radius: var(--rounded);
+      color: var(--on-surface);
+    }
+
+    .key-value {
+      font-family: var(--font-label);
+      font-weight: 300;
+      font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+      line-height: 1.15;
+      color: var(--on-surface);
+      margin: var(--space-xs) 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Header & In-page Navigation */
+    .masthead {
+      display: grid;
+      gap: var(--space-lg);
+      border-bottom: var(--rule);
+      padding-bottom: var(--space-xl);
+    }
+
+    .meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-sm);
+      padding-bottom: var(--space-sm);
+      border-bottom: var(--rule);
+    }
+
+    .toc-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs) var(--space-md);
+      padding: var(--space-sm) 0;
+      border-top: var(--rule);
+      border-bottom: var(--rule);
+    }
+
+    .toc-link {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--on-surface-variant);
+      text-decoration: none;
+      padding: var(--space-xs) 0;
+      border-bottom: 2px solid transparent;
+      transition: color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out);
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .toc-link:hover {
+      color: var(--primary-ink);
+      border-bottom-color: var(--primary);
+    }
+
+    /* Flat gray layers (Carbon Treatment 1) */
+    .layer {
+      background: var(--surface-container);
+      border-radius: 0;
+      padding: var(--space-lg);
+    }
+    .layer .layer {
+      background: var(--surface-container-high);
+    }
+
+    .section-head {
+      border-bottom: var(--rule);
+      padding-bottom: var(--space-md);
+      margin-bottom: var(--space-lg);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: var(--space-md);
+    }
+
+    /* Metric tiles */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
+      gap: var(--space-md);
+    }
+
+    .kpi-tile {
+      background: var(--surface-container);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: var(--space-xs);
+    }
+    .kpi-tile.is-primary {
+      border-bottom: var(--indicator);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 var(--space-sm);
+      border-radius: var(--rounded-full);
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      font-family: var(--font-body);
+      font-size: var(--label-size);
+      font-weight: 500;
+      width: fit-content;
+    }
+    .tag--green {
+      background: var(--positive-container);
+      color: var(--on-surface);
+    }
+    .tag--purple {
+      background: var(--hash-container);
+      color: var(--on-surface);
+    }
+    .tag--warn {
+      background: var(--warning-container);
+      color: var(--on-surface);
+    }
+
+    /* Asymmetric 2-column content grids */
+    .split-8-4 {
+      display: grid;
+      grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+      gap: var(--space-lg);
+      align-items: start;
+    }
+    .split-7-5 {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+      gap: var(--space-lg);
+      align-items: start;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+      gap: var(--space-md);
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+      gap: var(--space-md);
+    }
+
+    /* Step lists & hairline lists (Carbon Treatment 5) */
+    .step-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .step-list > li {
+      display: grid;
+      grid-template-columns: 2.5rem minmax(0, 1fr);
+      gap: var(--space-md);
+      padding: var(--space-sm) 0;
+      border-top: var(--rule);
+      align-items: baseline;
+    }
+    .step-list > li:first-child {
+      border-top: none;
+      padding-top: 0;
+    }
+    .step-num {
+      font-family: var(--font-label);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--primary-ink);
+    }
+
+    .plain-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .plain-list > li {
+      padding: var(--space-sm) 0;
+      border-top: var(--rule);
+      font-size: 0.9375rem;
+    }
+    .plain-list > li:first-child {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    /* Callouts (Carbon notification strip) */
+    .callout {
+      background: var(--surface-container);
+      border-left: 3px solid var(--primary);
+      padding: var(--space-md);
+      margin: var(--space-md) 0;
+    }
+    .callout--green { border-left-color: var(--tertiary); }
+    .callout--purple { border-left-color: var(--hash-accent); }
+    .callout--red { border-left-color: var(--error); }
+
+    /* Formula block */
+    .formula-box {
+      background: var(--background);
+      border: var(--rule);
+      border-left: 2px solid var(--primary);
+      padding: var(--space-md);
+      font-family: var(--font-label);
+      font-size: 0.9375rem;
+      color: var(--on-surface);
+      margin: var(--space-md) 0;
+      overflow-x: auto;
+    }
+
+    /* Tables (Carbon spec) */
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border-top: var(--rule);
+      border-bottom: var(--rule);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9375rem;
+    }
+    thead tr {
+      background: var(--surface-container-high);
+    }
+    th {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--on-surface);
+      padding: var(--space-sm) var(--space-md);
+      white-space: nowrap;
+    }
+    td {
+      padding: var(--space-sm) var(--space-md);
+      border-top: var(--rule);
+      vertical-align: top;
+    }
+    tbody tr:nth-child(even) {
+      background: var(--surface-container);
+    }
+    .num-col {
+      font-family: var(--font-label);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    /* Static structural mini-diagrams */
+    .diagram-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      align-items: center;
+      margin-top: var(--space-sm);
+    }
+    .mem-cell {
+      background: var(--background);
+      border: 1px solid var(--outline);
+      padding: var(--space-xs) var(--space-sm);
+      min-width: 56px;
+      text-align: center;
+      font-family: var(--font-label);
+    }
+    .mem-cell span {
+      display: block;
+      font-size: 0.6875rem;
+      color: var(--on-surface-variant);
+    }
+    .mem-cell strong {
+      font-size: 0.9375rem;
+      font-weight: 600;
+    }
+    .link-node {
+      display: inline-flex;
+      border: 1px solid var(--outline);
+      background: var(--background);
+      font-family: var(--font-label);
+      font-size: 0.8125rem;
+    }
+    .link-node__data {
+      padding: var(--space-xs) var(--space-sm);
+      font-weight: 600;
+      border-right: 1px solid var(--outline);
+    }
+    .link-node__ptr {
+      padding: var(--space-xs) var(--space-sm);
+      color: var(--primary-ink);
+      background: var(--primary-container);
+    }
+    .ptr-arrow {
+      font-family: var(--font-label);
+      color: var(--on-surface-variant);
+      font-size: 0.875rem;
+      padding: 0 2px;
+    }
+
+    /* Interactive Complexity Chart */
+    .chart-shell {
+      background: var(--surface-container);
+      padding: var(--space-lg);
+      display: grid;
+      gap: var(--space-md);
+    }
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-md);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+    .swatch {
+      width: 12px;
+      height: 12px;
+      display: inline-block;
+    }
+    .swatch--seq { background: var(--data-4); }
+    .swatch--bin { background: var(--data-1); }
+    .swatch--hash { background: var(--data-3); }
+
+    .svg-chart-wrap {
+      width: 100%;
+      min-height: 280px;
+      background: var(--background);
+      border: var(--rule);
+      padding: var(--space-md);
+    }
+
+    /* Form Controls & Buttons (Carbon) */
+    .controls-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+      gap: var(--space-md);
+      align-items: end;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+    .field-label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--on-surface-variant);
+    }
+
+    .carbon-input,
+    .carbon-select {
+      height: 44px;
+      background: var(--background);
+      border: none;
+      border-bottom: var(--field-rule);
+      border-radius: var(--rounded);
+      padding: 0 var(--space-md);
+      font-family: var(--font-label);
+      font-size: 0.9375rem;
+      color: var(--on-surface);
+      width: 100%;
+      transition: background-color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out);
+    }
+    .carbon-select {
+      padding-right: var(--space-xl);
+      cursor: pointer;
+    }
+    .carbon-input:hover,
+    .carbon-select:hover {
+      background: var(--surface-container-high);
+    }
+    .carbon-input.has-error {
+      border-bottom: 2px solid var(--error);
+      background: var(--error-container);
+    }
+
+    .field-error {
+      font-size: 0.8125rem;
+      color: var(--error);
+      min-height: 1.2em;
+      margin: 0;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      min-height: 44px;
+      padding: var(--space-sm) var(--space-lg);
+      border-radius: 0;
+      border: 1px solid transparent;
+      font-family: var(--font-body);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out);
+    }
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+    }
+    .btn-secondary {
+      background: var(--background);
+      color: var(--primary-ink);
+      border-color: var(--primary);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+    }
+    .btn-ghost {
+      background: var(--surface-container-high);
+      color: var(--on-surface);
+    }
+    .btn-ghost:hover:not(:disabled) {
+      background: var(--outline-variant);
+    }
+
+    .chip-btn {
+      min-height: 44px;
+      padding: 0 var(--space-md);
+      border: 1px solid var(--outline-variant);
+      background: var(--background);
+      color: var(--on-surface);
+      font-family: var(--font-label);
+      font-size: 0.8125rem;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out);
+    }
+    .chip-btn:hover {
+      background: var(--primary-container);
+      border-color: var(--primary);
+    }
+    .chip-btn.is-active {
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+    }
+
+    /* Simulator Stage */
+    .sim-stage {
+      background: var(--background);
+      border: var(--rule);
+      padding: var(--space-lg);
+      min-height: 220px;
+      display: grid;
+      gap: var(--space-md);
+    }
+
+    .sim-array-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+      gap: var(--space-sm);
+    }
+
+    .sim-cell {
+      border: 1px solid var(--outline-variant);
+      background: var(--surface-container);
+      padding: var(--space-sm);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      position: relative;
+      transition: transform var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), opacity var(--dur-short) var(--ease-out);
+    }
+    .sim-cell__idx {
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      color: var(--on-surface-variant);
+    }
+    .sim-cell__val {
+      font-family: var(--font-label);
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--on-surface);
+      font-variant-numeric: tabular-nums;
+    }
+    .sim-cell__ptr {
+      font-family: var(--font-label);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      min-height: 1.1em;
+      color: var(--primary-ink);
+    }
+
+    .sim-cell.is-discarded {
+      opacity: 0.38;
+      background: var(--surface-container);
+    }
+    .sim-cell.is-in-range {
+      border-color: var(--outline);
+      background: var(--background);
+    }
+    .sim-cell.is-checking {
+      background: var(--primary-container);
+      border-color: var(--primary);
+      border-bottom: 3px solid var(--primary);
+      transform: translateY(-2px);
+    }
+    .sim-cell.is-found {
+      background: var(--positive-container);
+      border-color: var(--tertiary);
+      border-bottom: 3px solid var(--tertiary);
+      transform: translateY(-2px);
+    }
+    .sim-cell.is-miss {
+      background: var(--error-container);
+      border-color: var(--error);
+    }
+
+    /* Hash table visualization */
+    .hash-buckets {
+      display: grid;
+      gap: var(--space-xs);
+    }
+    .hash-row {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr);
+      gap: var(--space-sm);
+      align-items: center;
+      padding: var(--space-xs);
+      border: 1px solid var(--outline-variant);
+      background: var(--surface-container);
+      transition: background-color var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out);
+    }
+    .hash-row.is-bucket-active {
+      background: var(--primary-container);
+      border-color: var(--primary);
+    }
+    .hash-row.is-bucket-found {
+      background: var(--positive-container);
+      border-color: var(--tertiary);
+    }
+    .hash-row.is-bucket-collision {
+      background: var(--warning-container);
+      border-color: var(--warning);
+    }
+    .hash-idx {
+      font-family: var(--font-label);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--on-surface);
+      padding-left: var(--space-xs);
+    }
+    .hash-chain {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      align-items: center;
+    }
+    .hash-node {
+      font-family: var(--font-label);
+      font-size: 0.875rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      background: var(--background);
+      border: 1px solid var(--outline);
+      color: var(--on-surface);
+    }
+    .hash-node.is-node-checking {
+      background: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+    }
+    .hash-node.is-node-found {
+      background: var(--tertiary);
+      color: var(--on-primary);
+      border-color: var(--tertiary);
+    }
+
+    .sim-status-banner {
+      padding: var(--space-md);
+      background: var(--surface-container);
+      border-left: 3px solid var(--primary);
+      font-size: 0.9375rem;
+    }
+    .sim-status-banner.is-found { border-left-color: var(--tertiary); background: var(--positive-container); }
+    .sim-status-banner.is-not-found { border-left-color: var(--error); background: var(--error-container); }
+
+    .sim-log {
+      max-height: 220px;
+      overflow-y: auto;
+      background: var(--background);
+      border: var(--rule);
+      padding: var(--space-sm) var(--space-md);
+      font-family: var(--font-label);
+      font-size: 0.8125rem;
+    }
+    .sim-log-entry {
+      padding: var(--space-xs) 0;
+      border-top: var(--rule);
+      color: var(--on-surface-variant);
+    }
+    .sim-log-entry:first-child { border-top: none; }
+    .sim-log-entry.is-current {
+      color: var(--on-surface);
+      font-weight: 600;
+    }
+
+    .cmp-bars {
+      display: grid;
+      gap: var(--space-sm);
+    }
+    .cmp-row {
+      display: grid;
+      gap: var(--space-xs);
+    }
+    .cmp-head {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-label);
+      font-size: 0.8125rem;
+    }
+    .cmp-track {
+      height: 10px;
+      background: var(--surface-container-high);
+      width: 100%;
+    }
+    .cmp-fill {
+      height: 100%;
+      background: var(--data-1);
+      transition: width var(--dur-short) var(--ease-out);
+    }
+    .cmp-fill--seq { background: var(--data-4); }
+    .cmp-fill--bin { background: var(--data-1); }
+    .cmp-fill--hash { background: var(--data-3); }
+
+    /* Code blocks (C#) */
+    .code-module {
+      border: 1px solid var(--code-border);
+      background: var(--code-bg);
+      color: var(--code-text);
+    }
+    .code-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-sm);
+      background: var(--code-header-bg);
+      border-bottom: 1px solid var(--code-border);
+      padding: var(--space-sm) var(--space-md);
+    }
+    .code-filename {
+      font-family: var(--font-label);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--code-text);
+    }
+    .copy-btn {
+      min-height: 36px;
+      padding: 0 var(--space-md);
+      background: var(--code-bg);
+      color: var(--code-text);
+      border: 1px solid var(--outline);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+    .copy-btn:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--on-primary);
+    }
+    pre.code-pre {
+      margin: 0;
+      padding: var(--space-md);
+      overflow-x: auto;
+      font-family: var(--font-label);
+      font-size: 0.84375rem;
+      line-height: 1.55;
+      tab-size: 4;
+    }
+    .tok-kw { color: var(--code-kw); font-weight: 500; }
+    .tok-type { color: var(--code-type); }
+    .tok-str { color: var(--code-str); }
+    .tok-num { color: var(--code-num); }
+    .tok-cmt { color: var(--code-muted); font-style: italic; }
+
+    /* Team Credits Section */
+    .academic-banner {
+      background: var(--surface-container);
+      border-left: 4px solid var(--primary);
+      padding: var(--space-lg);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+      gap: var(--space-md);
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+      gap: var(--space-md);
+    }
+
+    .team-card-wrap {
+      container-type: inline-size;
+    }
+
+    .team-card {
+      background: var(--surface-container);
+      padding: var(--space-md);
+      border-top: var(--indicator);
+      display: grid;
+      gap: var(--space-md);
+      height: 100%;
+    }
+
+      .avatar-frame {
+          width: 100%;
+          height: 100%;
+          aspect-ratio: 4 / 3;
+          background: var(--background);
+          border: var(--rule);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: var(--space-xs);
+          color: var(--on-surface-variant);
+          padding: 0;
+          overflow: hidden;
+      }
+
+      .avatar-frame img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center; /* Evita que se corte la cabeza */
+          display: block;
+      }
+
+    .member-fields {
+      display: grid;
+      gap: var(--space-sm);
+    }
+    .member-field {
+      border-top: var(--rule);
+      padding-top: var(--space-xs);
+    }
+    .member-field__val {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--on-surface);
+      margin: 2px 0 0;
+    }
+    .member-field__ctrl {
+      font-family: var(--font-label);
+      font-size: 0.9375rem;
+      color: var(--primary-ink);
+      margin: 2px 0 0;
+    }
+
+    @container (max-width: 240px) {
+      .team-card { padding: var(--space-sm); }
+    }
+
+    /* Footer */
+    .doc-footer {
+      border-top: var(--rule);
+      padding-top: var(--space-lg);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: var(--space-md);
+      color: var(--on-surface-variant);
+      font-size: 0.875rem;
+    }
+
+    @media (max-width: 900px) {
+      .split-8-4,
+      .split-7-5 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page-grid {
+        padding: var(--space-md);
+        gap: var(--space-xl);
+      }
+      .layer { padding: var(--space-md); }
+      .hash-row { grid-template-columns: 72px minmax(0, 1fr); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-grid">
+
+    <!-- MASTHEAD -->
+    <header class="masthead">
+      <div class="meta-bar">
+        <p class="label">Estructura de Datos · Unidad 6</p>
+        <p class="label">Ingeniería en Sistemas Computacionales</p>
+      </div>
+
+      <div>
+        <h1 class="display-title">Métodos de Búsqueda en <strong>Estructuras de Datos</strong></h1>
+        <p class="prose">
+          Localizar información con precisión define la eficiencia de cualquier sistema de cómputo. Desde el recorrido lineal sobre arreglos y listas enlazadas hasta la partición logarítmica y el acceso directo mediante funciones de dispersión, cada método responde directamente a cómo se organizan los datos en memoria.
+        </p>
+      </div>
+
+      <nav class="toc-nav" aria-label="Navegación de secciones">
+        <a class="toc-link" href="#fundamento">Fundamento</a>
+        <a class="toc-link" href="#busqueda-secuencial">6.1 Secuencial</a>
+        <a class="toc-link" href="#busqueda-binaria">6.2 Binaria</a>
+        <a class="toc-link" href="#busqueda-hash">6.3 Tablas Hash</a>
+        <a class="toc-link" href="#comparativa">Complejidad</a>
+        <a class="toc-link" href="#simulador">Simulador</a>
+        <a class="toc-link" href="#codigo-csharp">Código C#</a>
+        <a class="toc-link" href="#equipo">Equipo</a>
+      </nav>
+
+      <div class="kpi-grid">
+        <div class="kpi-tile is-primary">
+          <p class="label">6.1 Búsqueda Secuencial</p>
+          <p class="key-value">O(n)</p>
+          <span class="tag">Sin orden previo</span>
+          <p class="prose-muted">Recorre nodo a nodo o celda a celda. Mejor caso O(1); versátil en listas enlazadas.</p>
+        </div>
+        <div class="kpi-tile">
+          <p class="label">6.2 Búsqueda Binaria</p>
+          <p class="key-value">O(log n)</p>
+          <span class="tag tag--green">Arreglo ordenado</span>
+          <p class="prose-muted">Divide el espacio a la mitad en cada paso mediante divide y vencerás.</p>
+        </div>
+        <div class="kpi-tile">
+          <p class="label">6.3 Tablas Hash</p>
+          <p class="key-value">O(1)</p>
+          <span class="tag tag--purple">Dispersión h(k)</span>
+          <p class="prose-muted">Tiempo esperado constante calculando la dirección directa de memoria.</p>
+        </div>
+        <div class="kpi-tile">
+          <p class="label">Referencia (n = 1,000)</p>
+          <p class="key-value">500 vs 10</p>
+          <span class="tag tag--warn">Comparaciones</span>
+          <p class="prose-muted">Promedio secuencial (~500 pasos) frente al peor caso binario (10 pasos).</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- FUNDAMENTO ESTRUCTURAL -->
+    <section id="fundamento" aria-labelledby="title-fundamento">
+      <div class="section-head">
+        <div>
+          <p class="label">Contexto estructural y modularidad</p>
+          <h2 id="title-fundamento" class="section-title">La estructura en memoria <strong>condiciona la búsqueda</strong></h2>
+        </div>
+      </div>
+
+      <div class="split-7-5">
+        <div>
+          <p class="prose">
+            Bajo el principio clásico <em>Programación = Estructuras de Datos + Algoritmos</em>, no es posible elegir un algoritmo de búsqueda sin observar cómo residen los datos en memoria principal. Las colecciones se dividen en <strong>estructuras contiguas</strong> (como vectores o arreglos estáticos en posiciones adyacentes) y <strong>estructuras enlazadas</strong> (nodos vinculados mediante punteros o referencias sin requerir contigüidad física).
+          </p>
+          <p class="prose">
+            Asimismo, el paradigma de <strong>Tipos de Datos Abstractos (TDA)</strong> y la <strong>modularidad</strong> en lenguajes orientados a objetos como C# separan la interfaz pública de la operación (<em>qué</em> buscamos) de su implementación interna (<em>cómo</em> recorremos la estructura), permitiendo sustituir un vector por una lista enlazada o una tabla hash sin romper el resto de la aplicación.
+          </p>
+        </div>
+
+        <div class="layer">
+          <p class="label">Representación en memoria</p>
+          <div style="margin-top: var(--space-sm); display: grid; gap: var(--space-md);">
+            <div>
+              <p class="subhead" style="font-size: 0.9375rem;">Estructura contigua (Vector)</p>
+              <p class="prose-muted">Acceso directo O(1) por índice calculado desde la dirección base.</p>
+              <div class="diagram-strip" aria-hidden="true">
+                <div class="mem-cell"><span>[0]</span><strong>14</strong></div>
+                <div class="mem-cell"><span>[1]</span><strong>27</strong></div>
+                <div class="mem-cell"><span>[2]</span><strong>39</strong></div>
+                <div class="mem-cell"><span>[3]</span><strong>52</strong></div>
+              </div>
+            </div>
+            <div style="border-top: var(--rule); padding-top: var(--space-sm);">
+              <p class="subhead" style="font-size: 0.9375rem;">Estructura enlazada (Lista simple)</p>
+              <p class="prose-muted">Cada nodo guarda <span class="mono-inline">INFO(P)</span> y un enlace <span class="mono-inline">SIG(P)</span>; exige acceso secuencial.</p>
+              <div class="diagram-strip" aria-hidden="true">
+                <div class="link-node"><span class="link-node__data">14</span><span class="link-node__ptr">SIG</span></div>
+                <span class="ptr-arrow">&rarr;</span>
+                <div class="link-node"><span class="link-node__data">27</span><span class="link-node__ptr">SIG</span></div>
+                <span class="ptr-arrow">&rarr;</span>
+                <div class="link-node"><span class="link-node__data">39</span><span class="link-node__ptr">NULL</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6.1 BÚSQUEDA SECUENCIAL -->
+    <section id="busqueda-secuencial" aria-labelledby="title-secuencial">
+      <div class="section-head">
+        <div>
+          <p class="label">Sección 6.1 · Recorrido lineal</p>
+          <h2 id="title-secuencial" class="section-title">6.1 Búsqueda <strong>Secuencial (Lineal)</strong></h2>
+        </div>
+        <span class="tag">Mejor O(1) · Peor O(n)</span>
+      </div>
+
+      <div class="split-8-4">
+        <div>
+          <p class="prose">
+            La <strong>búsqueda secuencial</strong> (o búsqueda lineal) es el método más directo y universal para localizar un elemento objetivo <span class="mono-inline">x</span> dentro de una colección. Consiste en inspeccionar los elementos uno por uno, en orden consecutivo desde el inicio de la estructura hasta localizar una coincidencia o alcanzar el final sin éxito.
+          </p>
+          <p class="prose">
+            A diferencia de otros métodos, <strong>no exige que los datos estén ordenados</strong>. En arreglos contiguos admite una mejora clásica llamada <em>búsqueda con centinela</em>: se coloca el valor buscado al final (en <span class="mono-inline">A[n]</span>) para eliminar la comprobación del límite en cada iteración del bucle y verificar al salir si se halló antes del centinela. En listas enlazadas desordenadas suele emplearse además la heurística de <em>mover al frente</em> (<em>move-to-front</em>), reubicando el nodo encontrado al inicio para acelerar consultas repetidas tipo caché.
+          </p>
+
+          <div class="layer" style="margin-top: var(--space-lg);">
+            <h3 class="subhead">Algoritmo paso a paso</h3>
+            <ol class="step-list">
+              <li>
+                <span class="step-num">01</span>
+                <span><strong>Inicialización:</strong> Posicionar el cursor al principio: índice <span class="mono-inline">i = 0</span> en un arreglo, o puntero auxiliar <span class="mono-inline">P = PRIMERO</span> en una lista enlazada.</span>
+              </li>
+              <li>
+                <span class="step-num">02</span>
+                <span><strong>Condición de límite:</strong> Comprobar que no se haya superado el final (<span class="mono-inline">i &lt; n</span> o <span class="mono-inline">P != null</span>). Si se alcanzó el fin, terminar devolviendo no encontrado (<span class="mono-inline">-1</span> o <span class="mono-inline">null</span>).</span>
+              </li>
+              <li>
+                <span class="step-num">03</span>
+                <span><strong>Comparación:</strong> Evaluar si el valor actual (<span class="mono-inline">datos[i]</span> o <span class="mono-inline">P.Dato</span>) es igual al objetivo <span class="mono-inline">x</span>.</span>
+              </li>
+              <li>
+                <span class="step-num">04</span>
+                <span><strong>Éxito o avance:</strong> Si coincide, retornar la posición <span class="mono-inline">i</span> (o la referencia <span class="mono-inline">P</span>). De lo contrario, avanzar (<span class="mono-inline">i++</span> o <span class="mono-inline">P = P.Siguiente</span>) y repetir desde el paso 02.</span>
+              </li>
+              <li>
+                <span class="step-num">05</span>
+                <span><strong>Variante ordenada (optimización):</strong> Si la estructura está ordenada ascendentemente y el valor actual supera a <span class="mono-inline">x</span>, se puede abortar tempranamente como búsqueda fallida.</span>
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        <aside style="display: grid; gap: var(--space-md);">
+          <div class="layer">
+            <p class="label">Análisis de Complejidad</p>
+            <ul class="plain-list" style="margin-top: var(--space-sm);">
+              <li>
+                <strong>Mejor caso — O(1):</strong> El elemento buscado se ubica exactamente en la primera posición (<span class="mono-inline">índice 0</span> o cabeza de la lista); basta 1 comparación.
+              </li>
+              <li>
+                <strong>Caso promedio — O(n):</strong> Con probabilidad uniforme, requiere <span class="mono-inline">(n + 1) / 2</span> comparaciones (~500 pasos en 1,000 elementos).
+              </li>
+              <li>
+                <strong>Peor caso — O(n):</strong> El dato está al final o no existe en la colección; exige recorrer todos los <span class="mono-inline">n</span> elementos.
+              </li>
+              <li>
+                <strong>Complejidad espacial — O(1):</strong> Solo utiliza una variable índice o un puntero temporal <span class="mono-inline">P</span>.
+              </li>
+            </ul>
+          </div>
+
+          <div class="callout">
+            <p class="label" style="color: var(--primary-ink);">Uso en listas enlazadas</p>
+            <p class="prose-muted" style="color: var(--on-surface); margin-top: var(--space-xs);">
+              Las listas enlazadas simples y dobles carecen de acceso aleatorio por índice. Por ello, incluso si una lista enlazada contiene datos ordenados, su búsqueda base sigue siendo secuencial O(n) siguiendo los enlaces <span class="mono-inline">SIG(P)</span>.
+            </p>
+          </div>
+        </aside>
+      </div>
+
+      <div class="grid-3" style="margin-top: var(--space-lg);">
+        <div class="layer">
+          <p class="label" style="color: var(--tertiary);">Ventajas</p>
+          <ul class="plain-list" style="margin-top: var(--space-sm);">
+            <li>No requiere ordenamiento previo de los datos.</li>
+            <li>Implementación trivial y bajo consumo de memoria O(1).</li>
+            <li>Funciona tanto en estructuras contiguas (arreglos) como enlazadas (listas simples, dobles o circulares).</li>
+            <li>Excelente rendimiento en arreglos muy pequeños por su localidad de caché secuencial.</li>
+          </ul>
+        </div>
+        <div class="layer">
+          <p class="label" style="color: var(--error);">Desventajas</p>
+          <ul class="plain-list" style="margin-top: var(--space-sm);">
+            <li>Ineficiente para colecciones grandes: el tiempo crece linealmente con <span class="mono-inline">n</span>.</li>
+            <li>En listas enlazadas presenta menor localidad espacial que en arreglos contiguos debido a saltos de puntero en memoria.</li>
+            <li>Realiza en promedio <span class="mono-inline">n / 2</span> comparaciones aun cuando existan índices alternativos posibles.</li>
+          </ul>
+        </div>
+        <div class="layer">
+          <p class="label">Casos de uso frecuentes</p>
+          <ul class="plain-list" style="margin-top: var(--space-sm);">
+            <li>Listas pequeñas (decenas de elementos) donde ordenar cuesta más que buscar.</li>
+            <li>Listas enlazadas dinámicas con inserciones frecuentes sin índice auxiliar.</li>
+            <li>Datos que llegan en flujo sin orden y se consultan de forma esporádica.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6.2 BÚSQUEDA BINARIA -->
+    <section id="busqueda-binaria" aria-labelledby="title-binaria">
+      <div class="section-head">
+        <div>
+          <p class="label">Sección 6.2 · Divide y vencerás</p>
+          <h2 id="title-binaria" class="section-title">6.2 Búsqueda <strong>Binaria</strong></h2>
+        </div>
+        <span class="tag tag--green">Complejidad O(log n)</span>
+      </div>
+
+      <div class="split-8-4">
+        <div>
+          <p class="prose">
+            La <strong>búsqueda binaria</strong> aplica el paradigma algorítmico de <strong>divide y vencerás</strong>. Al igual que cuando una persona abre una agenda o diccionario por la mitad y decide si retroceder o avanzar alfabéticamente según la letra observada, este método compara el elemento central del intervalo actual contra el valor buscado y descarta la mitad imposible en una sola operación.
+          </p>
+
+          <div class="callout callout--red">
+            <p class="label" style="color: var(--error);">Prerrequisito fundamental</p>
+            <p class="prose-muted" style="color: var(--on-surface); margin-top: var(--space-xs);">
+              Para que la búsqueda binaria sea correcta y eficiente se requieren dos condiciones estrictas: <strong>1) los elementos deben estar previamente ordenados</strong> (ascendente o descendentemente), y <strong>2) la estructura debe permitir acceso aleatorio O(1)</strong> por índice (como un arreglo o vector contiguo).
+            </p>
+          </div>
+
+          <h3 class="subhead" style="margin-top: var(--space-lg);">Cálculo seguro del índice central</h3>
+          <p class="prose">
+            En cada iteración se delimita el subarreglo mediante los índices <span class="mono-inline">bajo</span> y <span class="mono-inline">alto</span>. Aunque algebraicamente el punto medio es <span class="mono-inline">(bajo + alto) / 2</span>, en lenguajes con enteros de tamaño fijo como C# (<span class="mono-inline">Int32</span>) la suma <span class="mono-inline">bajo + alto</span> puede producir un desbordamiento (<em>overflow</em>) en arreglos masivos. La forma segura estándar es:
+          </p>
+          <div class="formula-box">
+            medio = bajo + (alto - bajo) / 2 &nbsp;&nbsp;// División entera (redondea hacia abajo)
+          </div>
+
+          <div class="layer">
+            <h3 class="subhead">Algoritmo paso a paso</h3>
+            <ol class="step-list">
+              <li>
+                <span class="step-num">01</span>
+                <span><strong>Delimitar intervalo:</strong> Asignar <span class="mono-inline">bajo = 0</span> y <span class="mono-inline">alto = n - 1</span>.</span>
+              </li>
+              <li>
+                <span class="step-num">02</span>
+                <span><strong>Condición de paro:</strong> Mientras <span class="mono-inline">bajo &lt;= alto</span>, el subarreglo de búsqueda aún contiene al menos un elemento. Si <span class="mono-inline">bajo &gt; alto</span>, el valor no existe y se devuelve <span class="mono-inline">-1</span>.</span>
+              </li>
+              <li>
+                <span class="step-num">03</span>
+                <span><strong>Calcular pivote central:</strong> Obtener <span class="mono-inline">medio = bajo + (alto - bajo) / 2</span>.</span>
+              </li>
+              <li>
+                <span class="step-num">04</span>
+                <span><strong>Evaluar y dividir:</strong> Si <span class="mono-inline">datos[medio] == x</span>, retornar <span class="mono-inline">medio</span>. Si <span class="mono-inline">x &lt; datos[medio]</span>, descartar la mitad derecha ajustando <span class="mono-inline">alto = medio - 1</span>. Si <span class="mono-inline">x &gt; datos[medio]</span>, descartar la mitad izquierda ajustando <span class="mono-inline">bajo = medio + 1</span>.</span>
+              </li>
+              <li>
+                <span class="step-num">05</span>
+                <span><strong>Repetir o retornar:</strong> Continuar iterando (o invocando recursivamente <span class="mono-inline">BuscarRecursivo</span> sobre el nuevo subarreglo) hasta encontrar <span class="mono-inline">x</span> o agotar el intervalo.</span>
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        <aside style="display: grid; gap: var(--space-md);">
+          <div class="layer">
+            <p class="label">Análisis de Complejidad</p>
+            <ul class="plain-list" style="margin-top: var(--space-sm);">
+              <li>
+                <strong>Mejor caso — O(1):</strong> El elemento buscado coincide con el primer pivote central evaluado.
+              </li>
+              <li>
+                <strong>Caso promedio y peor caso — O(log₂ n):</strong> Cada comparación reduce el espacio restante a la mitad (<span class="mono-inline">n, n/2, n/4, ..., 1</span>). El máximo de pasos es <span class="mono-inline">⌊log₂ n⌋ + 1</span>.
+              </li>
+              <li>
+                <strong>Espacio (Iterativa vs. Recursiva):</strong> La versión iterativa usa memoria auxiliar <strong>O(1)</strong>; la recursiva consume <strong>O(log n)</strong> en la pila de llamadas del sistema.
+              </li>
+            </ul>
+          </div>
+
+          <div class="layer">
+            <p class="label">Escala logarítmica en acción</p>
+            <p class="prose-muted" style="margin-top: var(--space-xs);">Comparaciones en el peor caso conforme crece <span class="mono-inline">n</span>:</p>
+            <ul class="plain-list" style="margin-top: var(--space-sm);">
+              <li class="num-col">n = 16 &nbsp;&rarr;&nbsp; máx. 5 pasos</li>
+              <li class="num-col">n = 1,000 &nbsp;&rarr;&nbsp; máx. 10 pasos</li>
+              <li class="num-col">n = 1,000,000 &nbsp;&rarr;&nbsp; máx. 20 pasos</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+
+      <div class="grid-2" style="margin-top: var(--space-lg);">
+        <div class="layer">
+          <p class="label" style="color: var(--tertiary);">Ventajas</p>
+          <ul class="plain-list" style="margin-top: var(--space-sm);">
+            <li>Velocidad drásticamente superior a la búsqueda lineal en conjuntos medianos y grandes.</li>
+            <li>Comportamiento determinista y predecible: acotado estrictamente a <span class="mono-inline">O(log n)</span>.</li>
+            <li>Versión iterativa libre de sobrecarga en pila de llamadas y con espacio constante <span class="mono-inline">O(1)</span>.</li>
+          </ul>
+        </div>
+        <div class="layer">
+          <p class="label" style="color: var(--error);">Desventajas</p>
+          <ul class="plain-list" style="margin-top: var(--space-sm);">
+            <li>Exige que el arreglo esté ordenado; ordenar desde cero cuesta <span class="mono-inline">O(n log n)</span>.</li>
+            <li>Mantener un arreglo contiguo ordenado ante inserciones y borrados frecuentes cuesta <span class="mono-inline">O(n)</span> por desplazamiento de elementos.</li>
+            <li>Ineficaz en listas enlazadas puras al no poder saltar al índice <span class="mono-inline">medio</span> en tiempo constante.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6.3 TABLAS HASH -->
+    <section id="busqueda-hash" aria-labelledby="title-hash">
+      <div class="section-head">
+        <div>
+          <p class="label">Sección 6.3 · Acceso directo por dispersión</p>
+          <h2 id="title-hash" class="section-title">6.3 Búsqueda por Funciones de <strong>HASH (Tablas Hash)</strong></h2>
+        </div>
+        <span class="tag tag--purple">Esperada O(1)</span>
+      </div>
+
+      <div class="split-8-4">
+        <div>
+          <p class="prose">
+            El <strong>hashing</strong> (dispersión) sustituye la comparación sucesiva de valores por un cálculo aritmético directo. Una <strong>tabla hash</strong> almacena pares clave-valor dentro de un arreglo de <span class="mono-inline">m</span> posiciones llamadas <em>cubetas</em> (<em>buckets</em>). A partir de una clave <span class="mono-inline">k</span>, una <strong>función de dispersión</strong> <span class="mono-inline">h(k)</span> transforma la clave en un índice válido dentro del rango <span class="mono-inline">[0, m - 1]</span>.
+          </p>
+          <p class="prose">
+            La función debe ser <strong>determinista</strong> (la misma clave siempre produce el mismo índice), rápida de evaluar en <span class="mono-inline">O(1)</span> y distribuir las claves de manera uniforme. El método más clásico para claves enteras es la división modular, eligiendo preferentemente un tamaño de tabla <span class="mono-inline">m</span> primo:
+          </p>
+          <div class="formula-box" style="border-left-color: var(--hash-accent);">
+            h(k) = ((k mod m) + m) mod m &nbsp;&nbsp;// Garantiza índice no negativo en [0, m - 1]
+          </div>
+
+          <h3 class="subhead" style="margin-top: var(--space-lg);">Manejo y resolución de colisiones</h3>
+          <p class="prose">
+            Dado que el universo de posibles claves supera al tamaño <span class="mono-inline">m</span> de la tabla, es inevitable que dos claves distintas produzcan el mismo índice (<span class="mono-inline">k₁ != k₂</span> pero <span class="mono-inline">h(k₁) == h(k₂)</span>). Este evento se denomina <strong>colisión</strong> y existen dos familias principales para resolverlo:
+          </p>
+
+          <div class="grid-2" style="margin-top: var(--space-md);">
+            <div class="layer" style="border-top: var(--indicator-hash);">
+              <p class="label" style="color: var(--hash-accent);">Estrategia 1</p>
+              <h4 class="subhead" style="margin-top: var(--space-xs);">Encadenamiento (Separate Chaining)</h4>
+              <p class="prose-muted" style="color: var(--on-surface);">
+                Cada cubeta de la tabla guarda la cabeza de una <strong>lista enlazada</strong>. Cuando ocurre una colisión, el nuevo nodo se inserta en la lista de esa cubeta. Al buscar, se calcula <span class="mono-inline">h(k)</span> en <span class="mono-inline">O(1)</span> y se recorre secuencialmente únicamente la breve lista enlazada de esa posición.
+              </p>
+            </div>
+            <div class="layer" style="border-top: var(--indicator);">
+              <p class="label" style="color: var(--primary-ink);">Estrategia 2</p>
+              <h4 class="subhead" style="margin-top: var(--space-xs);">Direccionamiento Abierto (Open Addressing)</h4>
+              <p class="prose-muted" style="color: var(--on-surface);">
+                Todos los registros viven dentro del mismo arreglo sin listas externas. Si la cubeta <span class="mono-inline">h(k)</span> está ocupada, se explora una secuencia alternativa hasta hallar una celda libre o la clave buscada: <strong>sondeo lineal</strong> <span class="mono-inline">(h(k) + i) mod m</span>, <strong>sondeo cuadrático</strong> <span class="mono-inline">(h(k) + i²) mod m</span> o <strong>doble hashing</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <aside style="display: grid; gap: var(--space-md);">
+          <div class="layer">
+            <p class="label">Complejidad y Factor de Carga</p>
+            <ul class="plain-list" style="margin-top: var(--space-sm);">
+              <li>
+                <strong>Factor de carga (&alpha;):</strong> Se define como <span class="mono-inline">&alpha; = n / m</span> (elementos almacenados entre capacidad). En encadenamiento conviene mantener <span class="mono-inline">&alpha; &le; 1</span>; en direccionamiento abierto <span class="mono-inline">&alpha; &lt; 0.7</span> antes de redimensionar (<em>rehashing</em>).
+              </li>
+              <li>
+                <strong>Caso esperado — O(1):</strong> Con dispersión uniforme y <span class="mono-inline">&alpha;</span> acotado, el costo promedio de búsqueda, inserción y eliminación es constante: <span class="mono-inline">O(1 + &alpha;) = O(1)</span>.
+              </li>
+              <li>
+                <strong>Peor caso — O(n):</strong> Si una mala función hash envía todas las claves a la misma cubeta, la búsqueda degenera en un recorrido lineal de longitud <span class="mono-inline">n</span>.
+              </li>
+            </ul>
+          </div>
+
+          <div class="callout callout--purple">
+            <p class="label" style="color: var(--hash-accent);">Integración con Listas Enlazadas</p>
+            <p class="prose-muted" style="color: var(--on-surface); margin-top: var(--space-xs);">
+              Las tablas hash con encadenamiento combinan lo mejor de ambos mundos: la indexación directa O(1) de los arreglos contiguos en el directorio de cubetas y la flexibilidad dinámica de las listas enlazadas para absorber colisiones.
+            </p>
+          </div>
+        </aside>
+      </div>
+
+      <div class="grid-2" style="margin-top: var(--space-lg);">
+        <div class="layer">
+          <p class="label" style="color: var(--tertiary);">Ventajas</p>
+          <ul class="plain-list" style="margin-top: var(--space-sm);">
+            <li>Búsqueda, inserción y eliminación en tiempo promedio constante <strong>O(1)</strong> independientemente de que haya miles o millones de registros.</li>
+            <li>No requiere que los datos ingresen ni se mantengan ordenados.</li>
+            <li>Ideal para diccionarios, índices de bases de datos, cachés y tablas de símbolos de compiladores.</li>
+          </ul>
+        </div>
+        <div class="layer">
+          <p class="label" style="color: var(--error);">Desventajas</p>
+          <ul class="plain-list" style="margin-top: var(--space-sm);">
+            <li>Mayor consumo de memoria inicial para mantener un factor de carga bajo y evitar colisiones frecuentes.</li>
+            <li>No conserva orden entre claves: es ineficiente para búsquedas por rango (ej. valores entre 20 y 50) o encontrar mínimo/máximo.</li>
+            <li>Las operaciones de redimensionamiento (<em>rehashing</em>) al crecer la tabla requieren recalcular todos los índices.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- GRÁFICA Y TABLA COMPARATIVA -->
+    <section id="comparativa" aria-labelledby="title-comparativa">
+      <div class="section-head">
+        <div>
+          <p class="label">Síntesis analítica</p>
+          <h2 id="title-comparativa" class="section-title">Comparativa de <strong>Crecimiento Asintótico</strong></h2>
+        </div>
+      </div>
+
+      <div class="split-7-5">
+        <div class="chart-shell">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: var(--space-md);">
+            <div>
+              <h3 class="subhead" style="margin-bottom: 2px;">Operaciones en el peor caso / esperado según tamaño n</h3>
+              <p class="label">Escala comparativa de comparaciones máximas</p>
+            </div>
+            <div class="field-group" style="min-width: 210px;">
+              <label class="field-label" for="n-slider">Tamaño de muestra (n): <strong id="n-slider-val">200</strong></label>
+              <input id="n-slider" type="range" min="10" max="1000" step="10" value="200" oninput="updateComplexityView(this.value)">
+            </div>
+          </div>
+
+          <div class="chart-legend">
+            <span class="legend-item"><span class="swatch swatch--seq"></span> Secuencial O(n)</span>
+            <span class="legend-item"><span class="swatch swatch--bin"></span> Binaria O(log₂ n)</span>
+            <span class="legend-item"><span class="swatch swatch--hash"></span> Hash O(1) esperada</span>
+          </div>
+
+          <div class="svg-chart-wrap">
+            <svg id="complexity-svg" viewBox="0 0 640 240" width="100%" height="240" role="img" aria-label="Gráfica comparativa de complejidad temporal O(n), O(log n) y O(1)">
+              <!-- Populated by JS -->
+            </svg>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi-tile" style="background: var(--background); border: var(--rule);">
+              <p class="label">Secuencial (peor caso)</p>
+              <p class="key-value" id="cmp-val-seq">200</p>
+              <p class="prose-muted">comparaciones máximas</p>
+            </div>
+            <div class="kpi-tile" style="background: var(--background); border: var(--rule);">
+              <p class="label">Binaria (peor caso)</p>
+              <p class="key-value" id="cmp-val-bin">8</p>
+              <p class="prose-muted">comparaciones máximas</p>
+            </div>
+            <div class="kpi-tile" style="background: var(--background); border: var(--rule);">
+              <p class="label">Tabla Hash (esperado)</p>
+              <p class="key-value" id="cmp-val-hash">1</p>
+              <p class="prose-muted">acceso directo por índice</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Criterio</th>
+                <th>Secuencial</th>
+                <th>Binaria</th>
+                <th>Tabla Hash</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Mejor caso</strong></td>
+                <td class="num-col">O(1)</td>
+                <td class="num-col">O(1)</td>
+                <td class="num-col">O(1)</td>
+              </tr>
+              <tr>
+                <td><strong>Caso promedio</strong></td>
+                <td class="num-col">O(n)</td>
+                <td class="num-col">O(log n)</td>
+                <td class="num-col">O(1)</td>
+              </tr>
+              <tr>
+                <td><strong>Peor caso</strong></td>
+                <td class="num-col">O(n)</td>
+                <td class="num-col">O(log n)</td>
+                <td class="num-col">O(n)</td>
+              </tr>
+              <tr>
+                <td><strong>Espacio extra</strong></td>
+                <td class="num-col">O(1)</td>
+                <td class="num-col">O(1) iter.</td>
+                <td class="num-col">O(m) tabla</td>
+              </tr>
+              <tr>
+                <td><strong>Orden previo</strong></td>
+                <td>No requerido</td>
+                <td>Obligatorio</td>
+                <td>No requerido</td>
+              </tr>
+              <tr>
+                <td><strong>Acceso requerido</strong></td>
+                <td>Secuencial</td>
+                <td>Aleatorio O(1)</td>
+                <td>Directo h(k)</td>
+              </tr>
+              <tr>
+                <td><strong>Estructura ideal</strong></td>
+                <td>Arreglo o Lista enlazada</td>
+                <td>Arreglo ordenado</td>
+                <td>Arreglo + Listas enlazadas</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SIMULADOR INTERACTIVO -->
+    <section id="simulador" aria-labelledby="title-simulador">
+      <div class="section-head">
+        <div>
+          <p class="label">Laboratorio interactivo</p>
+          <h2 id="title-simulador" class="section-title">Simulador de Búsqueda <strong>Paso a Paso</strong></h2>
+        </div>
+        <span class="tag">Ejecución visual + comparativa</span>
+      </div>
+
+      <div class="layer" style="display: grid; gap: var(--space-lg);">
+        <div class="controls-row">
+          <div class="field-group">
+            <label class="field-label" for="sim-algo">Algoritmo</label>
+            <select id="sim-algo" class="carbon-select" onchange="onSimConfigChange()">
+              <option value="sequential">6.1 Búsqueda Secuencial (Arreglo)</option>
+              <option value="binary">6.2 Búsqueda Binaria (Arreglo ordenado)</option>
+              <option value="hash-chain">6.3 Tabla Hash — Encadenamiento (m = 11)</option>
+              <option value="hash-linear">6.3 Tabla Hash — Sondeo Lineal (m = 11)</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="sim-target">Número a buscar</label>
+            <input id="sim-target" class="carbon-input" type="number" value="42" oninput="clearSimValidation()">
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="sim-dataset">Conjunto de datos</label>
+            <select id="sim-dataset" class="carbon-select" onchange="onDatasetChange()">
+              <option value="preset">Base ordenada (11 claves)</option>
+              <option value="collisions">Con colisiones mod 11 (11 claves)</option>
+              <option value="random">Aleatorio ordenado (11 claves)</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="sim-speed">Velocidad de reproducción</label>
+            <select id="sim-speed" class="carbon-select" onchange="onSpeedChange()">
+              <option value="950">Lenta (0.95 s)</option>
+              <option value="550" selected>Normal (0.55 s)</option>
+              <option value="250">Rápida (0.25 s)</option>
+            </select>
+          </div>
+        </div>
+
+        <p id="sim-error" class="field-error" role="status" aria-live="polite"></p>
+
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-md);">
+          <div class="btn-row">
+            <button type="button" class="btn btn-primary" id="btn-play" onclick="togglePlay()">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11l9-5.5-9-5.5z"/></svg>
+              <span id="btn-play-label">Reproducir</span>
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-prev" onclick="stepBackward()">Paso anterior</button>
+            <button type="button" class="btn btn-secondary" id="btn-next" onclick="stepForward()">Siguiente paso</button>
+            <button type="button" class="btn btn-ghost" onclick="resetSimulation()">Reiniciar</button>
+          </div>
+
+          <div class="btn-row" aria-label="Valores de prueba rápida">
+            <span class="label">Pruebas rápidas:</span>
+            <button type="button" class="chip-btn" onclick="quickSearch(7)">Primero (7)</button>
+            <button type="button" class="chip-btn" onclick="quickSearch(42)">Central (42)</button>
+            <button type="button" class="chip-btn" onclick="quickSearch(91)">Último (91)</button>
+            <button type="button" class="chip-btn" onclick="quickSearch(50)">Inexistente (50)</button>
+          </div>
+        </div>
+
+        <!-- Visual Stage -->
+        <div class="sim-stage">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-sm);">
+            <div>
+              <p class="label" id="stage-subtitle">Arreglo de entrada · n = 11</p>
+              <p class="subhead" id="stage-title" style="margin: 2px 0 0;">Visualización de memoria y punteros</p>
+            </div>
+            <div class="btn-row">
+              <span class="tag" id="badge-step">Paso 0 / 0</span>
+              <span class="tag tag--purple" id="badge-comps">Comparaciones: 0</span>
+            </div>
+          </div>
+
+          <div id="sim-visual-canvas"></div>
+
+          <div id="sim-status" class="sim-status-banner">
+            Selecciona un algoritmo, ingresa un número y pulsa <strong>Siguiente paso</strong> o <strong>Reproducir</strong>.
+          </div>
+        </div>
+
+        <!-- Trace Log + Simultaneous Algorithm Comparison -->
+        <div class="grid-2">
+          <div>
+            <p class="label" style="margin-bottom: var(--space-xs);">Bitácora de ejecución</p>
+            <div id="sim-log" class="sim-log" aria-live="polite"></div>
+          </div>
+
+          <div style="background: var(--background); border: var(--rule); padding: var(--space-md);">
+            <p class="label">Comparación directa para este dato y objetivo</p>
+            <p class="prose-muted" style="margin: var(--space-xs) 0 var(--space-md);">
+              Pasos totales requeridos por cada método sobre el conjunto actual (<span class="mono-inline" id="cmp-target-label">x = 42</span>):
+            </p>
+            <div class="cmp-bars" id="sim-cmp-bars"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN DE CÓDIGO EN C# -->
+    <section id="codigo-csharp" aria-labelledby="title-csharp">
+      <div class="section-head">
+        <div>
+          <p class="label">Implementación modular en C#</p>
+          <h2 id="title-csharp" class="section-title">Código de Referencia en <strong>C# (.NET)</strong></h2>
+        </div>
+        <span class="tag">Clases y métodos comentados</span>
+      </div>
+
+      <p class="prose">
+        Aplicando el principio de <strong>modularidad en C#</strong>, cada algoritmo se encapsula en su propia clase estática o módulo con responsabilidad única. Esto facilita probarlos de forma aislada y reutilizarlos dentro de cualquier capa de dominio o aplicación.
+      </p>
+
+      <div style="display: grid; gap: var(--space-lg);">
+
+        <!-- 1. Búsqueda Secuencial C# -->
+        <article class="code-module">
+          <div class="code-header">
+            <span class="code-filename">01_BusquedaSecuencial.cs — Arreglo contiguo y Lista enlazada</span>
+            <button type="button" class="copy-btn" onclick="copyCode('code-seq', this)">Copiar código</button>
+          </div>
+          <pre class="code-pre" id="code-seq"><span class="tok-kw">using</span> System;
+
+<span class="tok-kw">namespace</span> EstructurasDeDatos.Busquedas
+{
+    <span class="tok-cmt">// Nodo simple para demostrar búsqueda lineal en estructuras enlazadas</span>
+    <span class="tok-kw">public class</span> <span class="tok-type">NodoLista</span>
+    {
+        <span class="tok-kw">public int</span> Dato { <span class="tok-kw">get</span>; <span class="tok-kw">set</span>; }
+        <span class="tok-kw">public</span> <span class="tok-type">NodoLista</span>? Siguiente { <span class="tok-kw">get</span>; <span class="tok-kw">set</span>; }
+
+        <span class="tok-kw">public</span> NodoLista(<span class="tok-kw">int</span> dato)
+        {
+            Dato = dato;
+            Siguiente = <span class="tok-kw">null</span>;
+        }
+    }
+
+    <span class="tok-kw">public static class</span> <span class="tok-type">BusquedaSecuencial</span>
+    {
+        <span class="tok-cmt">/// &lt;summary&gt;</span>
+        <span class="tok-cmt">/// Busca un entero en un arreglo sin requerir orden previo.</span>
+        <span class="tok-cmt">/// Complejidad: Mejor caso O(1), Peor caso O(n), Espacio O(1).</span>
+        <span class="tok-cmt">/// &lt;/summary&gt;</span>
+        <span class="tok-kw">public static int</span> BuscarEnArreglo(<span class="tok-kw">int</span>[] datos, <span class="tok-kw">int</span> objetivo)
+        {
+            <span class="tok-kw">if</span> (datos == <span class="tok-kw">null</span> || datos.Length == <span class="tok-num">0</span>)
+                <span class="tok-kw">return</span> -<span class="tok-num">1</span>;
+
+            <span class="tok-kw">for</span> (<span class="tok-kw">int</span> i = <span class="tok-num">0</span>; i &lt; datos.Length; i++)
+            {
+                <span class="tok-kw">if</span> (datos[i] == objetivo)
+                {
+                    <span class="tok-kw">return</span> i; <span class="tok-cmt">// Retorna el índice donde se encontró</span>
+                }
+            }
+
+            <span class="tok-kw">return</span> -<span class="tok-num">1</span>; <span class="tok-cmt">// Elemento no encontrado</span>
+        }
+
+        <span class="tok-cmt">/// &lt;summary&gt;</span>
+        <span class="tok-cmt">/// Recorre secuencialmente una lista enlazada mediante punteros/referencias.</span>
+        <span class="tok-cmt">/// &lt;/summary&gt;</span>
+        <span class="tok-kw">public static</span> <span class="tok-type">NodoLista</span>? BuscarEnLista(<span class="tok-type">NodoLista</span>? primero, <span class="tok-kw">int</span> objetivo)
+        {
+            <span class="tok-type">NodoLista</span>? cursor = primero;
+
+            <span class="tok-kw">while</span> (cursor != <span class="tok-kw">null</span>)
+            {
+                <span class="tok-kw">if</span> (cursor.Dato == objetivo)
+                    <span class="tok-kw">return</span> cursor; <span class="tok-cmt">// Referencia al nodo encontrado</span>
+
+                cursor = cursor.Siguiente; <span class="tok-cmt">// Avanzar al siguiente enlace SIG(P)</span>
+            }
+
+            <span class="tok-kw">return null</span>;
+        }
+    }
+}</pre>
+        </article>
+
+        <!-- 2. Búsqueda Binaria C# -->
+        <article class="code-module">
+          <div class="code-header">
+            <span class="code-filename">02_BusquedaBinaria.cs — Versión iterativa O(1) espacio y recursiva</span>
+            <button type="button" class="copy-btn" onclick="copyCode('code-bin', this)">Copiar código</button>
+          </div>
+          <pre class="code-pre" id="code-bin"><span class="tok-kw">using</span> System;
+
+<span class="tok-kw">namespace</span> EstructurasDeDatos.Busquedas
+{
+    <span class="tok-kw">public static class</span> <span class="tok-type">BusquedaBinaria</span>
+    {
+        <span class="tok-cmt">/// &lt;summary&gt;</span>
+        <span class="tok-cmt">/// Búsqueda binaria iterativa sobre un arreglo previamente ordenado ascendentemente.</span>
+        <span class="tok-cmt">/// Complejidad: O(log n) en tiempo, O(1) en espacio adicional.</span>
+        <span class="tok-cmt">/// &lt;/summary&gt;</span>
+        <span class="tok-kw">public static int</span> BuscarIterativo(<span class="tok-kw">int</span>[] datosOrdenados, <span class="tok-kw">int</span> objetivo)
+        {
+            <span class="tok-kw">if</span> (datosOrdenados == <span class="tok-kw">null</span> || datosOrdenados.Length == <span class="tok-num">0</span>)
+                <span class="tok-kw">return</span> -<span class="tok-num">1</span>;
+
+            <span class="tok-kw">int</span> bajo = <span class="tok-num">0</span>;
+            <span class="tok-kw">int</span> alto = datosOrdenados.Length - <span class="tok-num">1</span>;
+
+            <span class="tok-kw">while</span> (bajo &lt;= alto)
+            {
+                <span class="tok-cmt">// Evita desbordamiento de enteros frente a (bajo + alto) / 2</span>
+                <span class="tok-kw">int</span> medio = bajo + (alto - bajo) / <span class="tok-num">2</span>;
+
+                <span class="tok-kw">if</span> (datosOrdenados[medio] == objetivo)
+                    <span class="tok-kw">return</span> medio; <span class="tok-cmt">// Coincidencia exacta en el centro</span>
+
+                <span class="tok-kw">if</span> (objetivo &lt; datosOrdenados[medio])
+                    alto = medio - <span class="tok-num">1</span>; <span class="tok-cmt">// Descartar mitad derecha</span>
+                <span class="tok-kw">else</span>
+                    bajo = medio + <span class="tok-num">1</span>; <span class="tok-cmt">// Descartar mitad izquierda</span>
+            }
+
+            <span class="tok-kw">return</span> -<span class="tok-num">1</span>;
+        }
+
+        <span class="tok-cmt">/// &lt;summary&gt;</span>
+        <span class="tok-cmt">/// Variante recursiva del método de divide y vencerás.</span>
+        <span class="tok-cmt">/// &lt;/summary&gt;</span>
+        <span class="tok-kw">public static int</span> BuscarRecursivo(<span class="tok-kw">int</span>[] datosOrdenados, <span class="tok-kw">int</span> objetivo, <span class="tok-kw">int</span> bajo, <span class="tok-kw">int</span> alto)
+        {
+            <span class="tok-kw">if</span> (bajo &gt; alto)
+                <span class="tok-kw">return</span> -<span class="tok-num">1</span>; <span class="tok-cmt">// Caso base: intervalo vacío</span>
+
+            <span class="tok-kw">int</span> medio = bajo + (alto - bajo) / <span class="tok-num">2</span>;
+
+            <span class="tok-kw">if</span> (datosOrdenados[medio] == objetivo)
+                <span class="tok-kw">return</span> medio;
+
+            <span class="tok-kw">return</span> objetivo &lt; datosOrdenados[medio]
+                ? BuscarRecursivo(datosOrdenados, objetivo, bajo, medio - <span class="tok-num">1</span>)
+                : BuscarRecursivo(datosOrdenados, objetivo, medio + <span class="tok-num">1</span>, alto);
+        }
+    }
+}</pre>
+        </article>
+
+        <!-- 3. Búsqueda Hash C# -->
+        <article class="code-module">
+          <div class="code-header">
+            <span class="code-filename">03_TablaHash.cs — Tabla Hash con resolución de colisiones por encadenamiento</span>
+            <button type="button" class="copy-btn" onclick="copyCode('code-hash', this)">Copiar código</button>
+          </div>
+          <pre class="code-pre" id="code-hash"><span class="tok-kw">using</span> System;
+<span class="tok-kw">using</span> System.Collections.Generic;
+
+<span class="tok-kw">namespace</span> EstructurasDeDatos.Busquedas
+{
+    <span class="tok-kw">public class</span> <span class="tok-type">TablaHash</span>
+    {
+        <span class="tok-kw">private readonly int</span> _capacidad;
+        <span class="tok-kw">private readonly</span> <span class="tok-type">LinkedList</span>&lt;(<span class="tok-kw">int</span> Clave, <span class="tok-kw">string</span> Valor)&gt;[] _cubetas;
+
+        <span class="tok-cmt">// Se recomienda usar un número primo para reducir colisiones</span>
+        <span class="tok-kw">public</span> TablaHash(<span class="tok-kw">int</span> capacidad = <span class="tok-num">11</span>)
+        {
+            _capacidad = capacidad;
+            _cubetas = <span class="tok-kw">new</span> <span class="tok-type">LinkedList</span>&lt;(<span class="tok-kw">int</span>, <span class="tok-kw">string</span>)&gt;[_capacidad];
+
+            <span class="tok-kw">for</span> (<span class="tok-kw">int</span> i = <span class="tok-num">0</span>; i &lt; _capacidad; i++)
+                _cubetas[i] = <span class="tok-kw">new</span> <span class="tok-type">LinkedList</span>&lt;(<span class="tok-kw">int</span>, <span class="tok-kw">string</span>)&gt;();
+        }
+
+        <span class="tok-cmt">/// &lt;summary&gt;</span>
+        <span class="tok-cmt">/// Función de dispersión modular segura para claves enteras positivas o negativas.</span>
+        <span class="tok-cmt">/// &lt;/summary&gt;</span>
+        <span class="tok-kw">private int</span> CalcularIndice(<span class="tok-kw">int</span> clave)
+        {
+            <span class="tok-kw">return</span> ((clave % _capacidad) + _capacidad) % _capacidad;
+        }
+
+        <span class="tok-cmt">/// &lt;summary&gt;</span>
+        <span class="tok-cmt">/// Inserta o actualiza un par clave-valor resolviendo colisiones en la lista de la cubeta.</span>
+        <span class="tok-cmt">/// &lt;/summary&gt;</span>
+        <span class="tok-kw">public void</span> Insertar(<span class="tok-kw">int</span> clave, <span class="tok-kw">string</span> valor)
+        {
+            <span class="tok-kw">int</span> indice = CalcularIndice(clave);
+            <span class="tok-kw">var</span> lista = _cubetas[indice];
+
+            <span class="tok-kw">var</span> nodoActual = lista.First;
+            <span class="tok-kw">while</span> (nodoActual != <span class="tok-kw">null</span>)
+            {
+                <span class="tok-kw">if</span> (nodoActual.Value.Clave == clave)
+                {
+                    nodoActual.Value = (clave, valor); <span class="tok-cmt">// Actualiza valor existente</span>
+                    <span class="tok-kw">return</span>;
+                }
+                nodoActual = nodoActual.Next;
+            }
+
+            lista.AddLast((clave, valor)); <span class="tok-cmt">// Encadena al final de la cubeta</span>
+        }
+
+        <span class="tok-cmt">/// &lt;summary&gt;</span>
+        <span class="tok-cmt">/// Busca una clave en tiempo esperado O(1).</span>
+        <span class="tok-cmt">/// &lt;/summary&gt;</span>
+        <span class="tok-kw">public string</span>? Buscar(<span class="tok-kw">int</span> clave)
+        {
+            <span class="tok-kw">int</span> indice = CalcularIndice(clave);
+            <span class="tok-kw">foreach</span> (<span class="tok-kw">var</span> entrada <span class="tok-kw">in</span> _cubetas[indice])
+            {
+                <span class="tok-kw">if</span> (entrada.Clave == clave)
+                    <span class="tok-kw">return</span> entrada.Valor;
+            }
+
+            <span class="tok-kw">return null</span>; <span class="tok-cmt">// Clave inexistente</span>
+        }
+    }
+}</pre>
+        </article>
+      </div>
+    </section>
+
+    <!-- SECCIÓN DE CRÉDITOS DEL EQUIPO -->
+    <section id="equipo" aria-labelledby="title-equipo">
+      <div class="section-head">
+        <div>
+          <p class="label">Créditos académicos</p>
+          <h2 id="title-equipo" class="section-title">Equipo de <strong>Desarrollo</strong></h2>
+        </div>
+        <span class="tag">4 integrantes</span>
+      </div>
+
+      <!-- Bloque de información académica compartida -->
+      <div class="academic-banner" style="margin-bottom: var(--space-lg);">
+        <div>
+          <p class="label">Carrera</p>
+          <p class="subhead" style="margin-top: var(--space-xs); margin-bottom: 0;">Ingeniería en Sistemas Computacionales</p>
+        </div>
+        <div>
+          <p class="label">Materia</p>
+          <p class="subhead" style="margin-top: var(--space-xs); margin-bottom: 0;">Estructura de Datos</p>
+        </div>
+        <div>
+          <p class="label">Maestra</p>
+          <p class="subhead" style="margin-top: var(--space-xs); margin-bottom: 0;">Myrna Villegas Gaytán</p>
+        </div>
+      </div>
+
+      <!-- 4 tarjetas estáticas de miembros del equipo -->
+      <div class="team-grid">
+        <div class="team-card-wrap">
+          <article class="team-card">
+            <div class="avatar-frame">
+              <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+                <img src="Aaron.jpeg" alt="Foto de Aaron Eduardo Hernandez Gutierrez">
+              </svg>
+              
+            </div>
+            <div class="member-fields">
+              <div class="member-field">
+                <p class="label">Nombre completo</p>
+                <p class="member-field__val">Aaron Eduardo Hernandez Gutierrez</p>
+              </div>
+              <div class="member-field">
+                <p class="label">Número de control</p>
+                <p class="member-field__ctrl">N.º de control: 25410137</p>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="team-card-wrap">
+          <article class="team-card">
+            <div class="avatar-frame">
+              
+                <img src="Alan.png" alt="Foto de Alan Chavez Corrugedo">
+              
+              
+            </div>
+            <div class="member-fields">
+              <div class="member-field">
+                <p class="label">Nombre completo</p>
+                <p class="member-field__val">Alan Chavez Corrugedo</p>
+              </div>
+              <div class="member-field">
+                <p class="label">Número de control</p>
+                <p class="member-field__ctrl">N.º de control: 25410139</p>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="team-card-wrap">
+          <article class="team-card">
+            <div class="avatar-frame">
+              
+                <img src="Yendi.png" alt="Foto de Yendi Pamela Peña Pasillas">
+              
+             
+            </div>
+            <div class="member-fields">
+              <div class="member-field">
+                <p class="label">Nombre completo</p>
+                <p class="member-field__val">Yendi Pamela Peña Pasillas</p>
+              </div>
+              <div class="member-field">
+                <p class="label">Número de control</p>
+                <p class="member-field__ctrl">N.º de control: 25410133</p>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="team-card-wrap">
+          <article class="team-card">
+            <div class="avatar-frame">
+              
+                <img src="Hugo.png" alt="Foto de Hugo Fernando Yañez Orpineda">
+              
+         
+            </div>
+            <div class="member-fields">
+              <div class="member-field">
+                <p class="label">Nombre completo</p>
+                <p class="member-field__val">Hugo Fernando Yañez Orpineda</p>
+              </div>
+              <div class="member-field">
+                <p class="label">Número de control</p>
+                <p class="member-field__ctrl">N.º de control: 25410155</p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <footer class="doc-footer">
+      <p style="margin: 0;">
+        Fuentes de referencia: Estructuras de Datos Contiguas y Dinámicas (Capítulo 5), Listas Enlazadas, Recursividad (Búsqueda Binaria), Modularidad en C# y Tipos de Datos Abstractos.
+      </p>
+      <p class="label">Ingeniería en Sistemas Computacionales · Estructura de Datos</p>
+    </footer>
+
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. COMPLEXITY SVG CHART
+    // =========================================================================
+    function updateComplexityView(rawVal) {
+      const n = Math.max(10, Math.min(1000, parseInt(rawVal, 10) || 200));
+      const labelEl = document.getElementById('n-slider-val');
+      const seqEl = document.getElementById('cmp-val-seq');
+      const binEl = document.getElementById('cmp-val-bin');
+      const hashEl = document.getElementById('cmp-val-hash');
+      const svg = document.getElementById('complexity-svg');
+
+      const binSteps = Math.floor(Math.log2(n)) + 1;
+      if (labelEl) labelEl.textContent = String(n);
+      if (seqEl) seqEl.textContent = String(n);
+      if (binEl) binEl.textContent = String(binSteps);
+      if (hashEl) hashEl.textContent = `1`;
+
+      if (!svg) return;
+
+      const W = 640;
+      const H = 240;
+      const padL = 52;
+      const padR = 92;
+      const padT = 18;
+      const padB = 34;
+      const plotW = W - padL - padR;
+      const plotH = H - padT - padB;
+      const maxN = 1000;
+
+      function xOf(valN) {
+        return padL + (valN / maxN) * plotW;
+      }
+      function yOf(ops) {
+        return padT + plotH - (ops / maxN) * plotH;
+      }
+
+      const samples = [10, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+      const ptsSeq = samples.map(s => `${xOf(s).toFixed(1)},${yOf(s).toFixed(1)}`).join(` `);
+      const ptsBin = samples.map(s => `${xOf(s).toFixed(1)},${yOf(Math.floor(Math.log2(s)) + 1).toFixed(1)}`).join(` `);
+      const ptsHash = samples.map(s => `${xOf(s).toFixed(1)},${yOf(1).toFixed(1)}`).join(` `);
+
+      const markerX = xOf(n).toFixed(1);
+      const markerSeqY = yOf(n).toFixed(1);
+      const markerBinY = yOf(binSteps).toFixed(1);
+      const markerHashY = yOf(1).toFixed(1);
+
+      const gridTicks = [0, 250, 500, 750, 1000];
+      let gridHtml = ``;
+      gridTicks.forEach(t => {
+        const y = yOf(t).toFixed(1);
+        gridHtml += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="var(--outline-variant)" stroke-width="1"/>`;
+        gridHtml += `<text x="${padL - 8}" y="${Number(y) + 4}" text-anchor="end" fill="var(--on-surface-variant)" font-family="IBM Plex Mono, monospace" font-size="11">${t}</text>`;
+      });
+
+      const xTicks = [0, 250, 500, 750, 1000];
+      xTicks.forEach(xt => {
+        const x = xOf(xt).toFixed(1);
+        gridHtml += `<text x="${x}" y="${H - 10}" text-anchor="middle" fill="var(--on-surface-variant)" font-family="IBM Plex Mono, monospace" font-size="11">n=${xt}</text>`;
+      });
+
+      svg.innerHTML = `
+        ${gridHtml}
+        <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + plotH}" stroke="var(--outline)" stroke-width="1"/>
+        <line x1="${padL}" y1="${padT + plotH}" x2="${W - padR}" y2="${padT + plotH}" stroke="var(--outline)" stroke-width="1"/>
+        <line x1="${markerX}" y1="${padT}" x2="${markerX}" y2="${padT + plotH}" stroke="var(--on-surface)" stroke-width="1" stroke-dasharray="4 3"/>
+
+        <polyline fill="none" stroke="var(--data-4)" stroke-width="2.5" points="${ptsSeq}"/>
+        <polyline fill="none" stroke="var(--data-1)" stroke-width="2.5" points="${ptsBin}"/>
+        <polyline fill="none" stroke="var(--data-3)" stroke-width="2.5" points="${ptsHash}"/>
+
+        <circle cx="${markerX}" cy="${markerSeqY}" r="4.5" fill="var(--data-4)"/>
+        <circle cx="${markerX}" cy="${markerBinY}" r="4.5" fill="var(--data-1)"/>
+        <circle cx="${markerX}" cy="${markerHashY}" r="4.5" fill="var(--data-3)"/>
+
+        <text x="${W - padR + 8}" y="${yOf(1000) + 4}" fill="var(--data-4)" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600">O(n)</text>
+        <text x="${W - padR + 8}" y="${yOf(10) - 6}" fill="var(--data-1)" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600">O(log n)</text>
+        <text x="${W - padR + 8}" y="${yOf(1) + 9}" fill="var(--data-3)" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600">O(1)</text>
+      `;
+    }
+
+    // =========================================================================
+    // 2. INTERACTIVE SEARCH SIMULATOR
+    // =========================================================================
+    const DATASETS = {
+      preset: [7, 14, 19, 25, 33, 42, 56, 63, 74, 85, 91],
+      collisions: [5, 16, 27, 38, 42, 49, 53, 64, 75, 86, 97]
+    };
+
+    const HASH_CAPACITY = 11;
+
+    const simState = {
+      dataset: [...DATASETS.preset],
+      steps: [],
+      stepIndex: 0,
+      timerId: null,
+      speedMs: 550
+    };
+
+    function modHash(key, cap) {
+      return ((key % cap) + cap) % cap;
+    }
+
+    function generateRandomSorted(count) {
+      const set = new Set();
+      while (set.size < count) {
+        set.add(Math.floor(Math.random() * 95) + 3);
+      }
+      return Array.from(set).sort((a, b) => a - b);
+    }
+
+    function buildSequentialSteps(arr, target) {
+      const steps = [{
+        type: `array`,
+        checking: -1,
+        found: -1,
+        discarded: [],
+        comps: 0,
+        status: `Preparado para buscar ${target} desde el índice 0 (inicio del arreglo).`,
+        statusClass: ``,
+        log: `Inicio: Búsqueda secuencial para objetivo ${target}.`
+      }];
+
+      const discarded = [];
+      for (let i = 0; i < arr.length; i++) {
+        const comps = i + 1;
+        if (arr[i] === target) {
+          steps.push({
+            type: `array`,
+            checking: i,
+            found: i,
+            discarded: [...discarded],
+            comps,
+            status: `Elemento ${target} encontrado en el índice [${i}] tras ${comps} comparación(es).`,
+            statusClass: `is-found`,
+            log: `Paso ${comps}: datos[${i}] == ${arr[i]} -> ¡Coincidencia exacta!`
+          });
+          return steps;
+        }
+        steps.push({
+          type: `array`,
+          checking: i,
+          found: -1,
+          discarded: [...discarded],
+          comps,
+          status: `Comparando datos[${i}] = ${arr[i]} con ${target}: no coincide, avanzamos a [${i + 1}].`,
+          statusClass: ``,
+          log: `Paso ${comps}: datos[${i}] = ${arr[i]} != ${target}. Avanzar.`
+        });
+        discarded.push(i);
+      }
+
+      steps.push({
+        type: `array`,
+        checking: -1,
+        found: -1,
+        discarded: [...discarded],
+        comps: arr.length,
+        status: `Se recorrieron los ${arr.length} elementos. El valor ${target} no se encuentra en la colección.`,
+        statusClass: `is-not-found`,
+        log: `Fin: Se alcanzó el límite del arreglo sin encontrar ${target}.`
+      });
+      return steps;
+    }
+
+    function buildBinarySteps(arr, target) {
+      let low = 0;
+      let high = arr.length - 1;
+      let comps = 0;
+
+      const steps = [{
+        type: `binary`,
+        low,
+        high,
+        mid: -1,
+        found: -1,
+        comps: 0,
+        status: `Intervalo inicial: bajo = 0, alto = ${high}. El arreglo está ordenado.`,
+        statusClass: ``,
+        log: `Inicio: Búsqueda binaria de ${target} en [${low}..${high}].`
+      }];
+
+      while (low <= high) {
+        const mid = low + Math.floor((high - low) / 2);
+        comps += 1;
+        const val = arr[mid];
+
+        if (val === target) {
+          steps.push({
+            type: `binary`,
+            low,
+            high,
+            mid,
+            found: mid,
+            comps,
+            status: `medio = ${low} + (${high} - ${low}) / 2 = ${mid}. datos[${mid}] = ${val} == ${target}. ¡Encontrado!`,
+            statusClass: `is-found`,
+            log: `Paso ${comps}: medio=${mid}, datos[${mid}]=${val} == ${target}. Éxito.`
+          });
+          return steps;
+        }
+
+        if (target < val) {
+          steps.push({
+            type: `binary`,
+            low,
+            high,
+            mid,
+            found: -1,
+            comps,
+            status: `medio = ${mid} (valor ${val}). Como ${target} < ${val}, se descarta la mitad derecha (nuevo alto = ${mid - 1}).`,
+            statusClass: ``,
+            log: `Paso ${comps}: medio=${mid} (${val}). ${target} < ${val} -> alto=${mid - 1}.`
+          });
+          high = mid - 1;
+        } else {
+          steps.push({
+            type: `binary`,
+            low,
+            high,
+            mid,
+            found: -1,
+            comps,
+            status: `medio = ${mid} (valor ${val}). Como ${target} > ${val}, se descarta la mitad izquierda (nuevo bajo = ${mid + 1}).`,
+            statusClass: ``,
+            log: `Paso ${comps}: medio=${mid} (${val}). ${target} > ${val} -> bajo=${mid + 1}.`
+          });
+          low = mid + 1;
+        }
+      }
+
+      steps.push({
+        type: `binary`,
+        low,
+        high,
+        mid: -1,
+        found: -1,
+        comps,
+        status: `bajo (${low}) > alto (${high}): el intervalo está vacío. ${target} no existe en el arreglo.`,
+        statusClass: `is-not-found`,
+        log: `Fin: bajo > alto tras ${comps} comparaciones. No encontrado.`
+      });
+      return steps;
+    }
+
+    function buildHashChainTable(arr) {
+      const buckets = Array.from({ length: HASH_CAPACITY }, () => []);
+      arr.forEach(v => {
+        buckets[modHash(v, HASH_CAPACITY)].push(v);
+      });
+      return buckets;
+    }
+
+    function buildHashChainSteps(arr, target) {
+      const buckets = buildHashChainTable(arr);
+      const bucketIdx = modHash(target, HASH_CAPACITY);
+      const chain = buckets[bucketIdx];
+
+      const steps = [{
+        type: `hash-chain`,
+        buckets,
+        activeBucket: bucketIdx,
+        activeNodeIdx: -1,
+        foundNodeIdx: -1,
+        comps: 0,
+        status: `Función de dispersión: h(${target}) = ${target} mod ${HASH_CAPACITY} = ${bucketIdx}. Saltamos directo a la cubeta [${bucketIdx}].`,
+        statusClass: ``,
+        log: `Paso 0: h(${target}) = ${bucketIdx}. Acceso O(1) a cubeta [${bucketIdx}].`
+      }];
+
+      if (chain.length === 0) {
+        steps.push({
+          type: `hash-chain`,
+          buckets,
+          activeBucket: bucketIdx,
+          activeNodeIdx: -1,
+          foundNodeIdx: -1,
+          comps: 1,
+          status: `La cubeta [${bucketIdx}] está vacía (NULL). Se confirma en 1 operación que ${target} no existe.`,
+          statusClass: `is-not-found`,
+          log: `Paso 1: Cubeta [${bucketIdx}] vacía -> No encontrado.`
+        });
+        return steps;
+      }
+
+      for (let j = 0; j < chain.length; j++) {
+        const comps = j + 1;
+        if (chain[j] === target) {
+          steps.push({
+            type: `hash-chain`,
+            buckets,
+            activeBucket: bucketIdx,
+            activeNodeIdx: j,
+            foundNodeIdx: j,
+            comps,
+            status: `Nodo ${j + 1} de la cubeta [${bucketIdx}] contiene ${target}. ¡Encontrado en ${comps} comparación(es)!`,
+            statusClass: `is-found`,
+            log: `Paso ${comps}: Cubeta [${bucketIdx}] -> nodo ${chain[j]} == ${target}. Éxito.`
+          });
+          return steps;
+        }
+        steps.push({
+          type: `hash-chain`,
+          buckets,
+          activeBucket: bucketIdx,
+          activeNodeIdx: j,
+          foundNodeIdx: -1,
+          comps,
+          status: `Colisión en cubeta [${bucketIdx}]: el nodo tiene ${chain[j]} != ${target}. Avanzamos al siguiente enlace.`,
+          statusClass: ``,
+          log: `Paso ${comps}: Cubeta [${bucketIdx}] -> nodo ${chain[j]} != ${target}.`
+        });
+      }
+
+      steps.push({
+        type: `hash-chain`,
+        buckets,
+        activeBucket: bucketIdx,
+        activeNodeIdx: -1,
+        foundNodeIdx: -1,
+        comps: chain.length,
+        status: `Se recorrió la lista de la cubeta [${bucketIdx}] hasta NULL. ${target} no está almacenado.`,
+        statusClass: `is-not-found`,
+        log: `Fin: Fin de lista en cubeta [${bucketIdx}]. No encontrado.`
+      });
+      return steps;
+    }
+
+    function buildHashLinearTable(arr) {
+      const slots = Array(HASH_CAPACITY).fill(null);
+      arr.forEach(v => {
+        let idx = modHash(v, HASH_CAPACITY);
+        while (slots[idx] !== null) {
+          idx = (idx + 1) % HASH_CAPACITY;
+        }
+        slots[idx] = v;
+      });
+      return slots;
+    }
+
+    function buildHashLinearSteps(arr, target) {
+      const slots = buildHashLinearTable(arr);
+      const startIdx = modHash(target, HASH_CAPACITY);
+
+      const steps = [{
+        type: `hash-linear`,
+        slots,
+        startIdx,
+        probeIdx: startIdx,
+        foundIdx: -1,
+        visited: [],
+        comps: 0,
+        status: `Cálculo inicial: h(${target}) = ${target} mod ${HASH_CAPACITY} = ${startIdx}. Inspeccionamos la ranura [${startIdx}].`,
+        statusClass: ``,
+        log: `Inicio: h(${target}) = ${startIdx} (sondeo i = 0).`
+      }];
+
+      const visited = [];
+      for (let i = 0; i < HASH_CAPACITY; i++) {
+        const idx = (startIdx + i) % HASH_CAPACITY;
+        const comps = i + 1;
+        const val = slots[idx];
+
+        if (val === null) {
+          steps.push({
+            type: `hash-linear`,
+            slots,
+            startIdx,
+            probeIdx: idx,
+            foundIdx: -1,
+            visited: [...visited],
+            comps,
+            status: `Ranura [${idx}] está vacía (NULL). Detenemos el sondeo lineal: ${target} no está en la tabla.`,
+            statusClass: `is-not-found`,
+            log: `Paso ${comps}: Ranura [${idx}] vacía -> No encontrado.`
+          });
+          return steps;
+        }
+
+        if (val === target) {
+          steps.push({
+            type: `hash-linear`,
+            slots,
+            startIdx,
+            probeIdx: idx,
+            foundIdx: idx,
+            visited: [...visited],
+            comps,
+            status: `Ranura [${idx}] (sondeo i=${i}) contiene ${target}. ¡Encontrado!`,
+            statusClass: `is-found`,
+            log: `Paso ${comps}: Ranura [${idx}] == ${target}. Éxito.`
+          });
+          return steps;
+        }
+
+        visited.push(idx);
+        steps.push({
+          type: `hash-linear`,
+          slots,
+          startIdx,
+          probeIdx: idx,
+          foundIdx: -1,
+          visited: [...visited],
+          comps,
+          status: `Colisión en ranura [${idx}] (contiene ${val}). Aplicamos sondeo lineal: siguiente ranura [(${startIdx} + ${i + 1}) mod ${HASH_CAPACITY}].`,
+          statusClass: ``,
+          log: `Paso ${comps}: Ranura [${idx}]=${val} != ${target}. Sondeo i=${i + 1}.`
+        });
+      }
+
+      steps.push({
+        type: `hash-linear`,
+        slots,
+        startIdx,
+        probeIdx: -1,
+        foundIdx: -1,
+        visited: [...visited],
+        comps: HASH_CAPACITY,
+        status: `Se inspeccionaron todas las ranuras sin encontrar ${target}.`,
+        statusClass: `is-not-found`,
+        log: `Fin: Tabla completa recorrida. No encontrado.`
+      });
+      return steps;
+    }
+
+    function computeAllCounts(arr, target) {
+      const seq = buildSequentialSteps(arr, target);
+      const bin = buildBinarySteps(arr, target);
+      const hChain = buildHashChainSteps(arr, target);
+      const hLin = buildHashLinearSteps(arr, target);
+
+      return {
+        seq: seq[seq.length - 1].comps,
+        bin: bin[bin.length - 1].comps,
+        hashChain: hChain[hChain.length - 1].comps,
+        hashLinear: hLin[hLin.length - 1].comps
+      };
+    }
+
+    function renderComparisonBars(arr, target) {
+      const container = document.getElementById('sim-cmp-bars');
+      const targetLbl = document.getElementById('cmp-target-label');
+      if (targetLbl) targetLbl.textContent = `x = ${target}`;
+      if (!container) return;
+
+      const counts = computeAllCounts(arr, target);
+      const maxC = Math.max(arr.length, counts.seq, counts.bin, counts.hashChain, counts.hashLinear, 1);
+
+      const rows = [
+        { name: `6.1 Búsqueda Secuencial`, val: counts.seq, cls: `cmp-fill--seq` },
+        { name: `6.2 Búsqueda Binaria`, val: counts.bin, cls: `cmp-fill--bin` },
+        { name: `6.3 Hash (Encadenamiento)`, val: counts.hashChain, cls: `cmp-fill--hash` },
+        { name: `6.3 Hash (Sondeo Lineal)`, val: counts.hashLinear, cls: `cmp-fill--hash` }
+      ];
+
+      container.innerHTML = rows.map(r => {
+        const pct = Math.max(6, Math.round((r.val / maxC) * 100));
+        return `
+          <div class="cmp-row">
+            <div class="cmp-head">
+              <span>${r.name}</span>
+              <strong>${r.val} op.</strong>
+            </div>
+            <div class="cmp-track">
+              <div class="cmp-fill ${r.cls}" style="width: ${pct}%;"></div>
+            </div>
+          </div>
+        `;
+      }).join(``);
+    }
+
+    function renderSimStep() {
+      const step = simState.steps[simState.stepIndex];
+      if (!step) return;
+
+      const canvas = document.getElementById('sim-visual-canvas');
+      const statusEl = document.getElementById('sim-status');
+      const badgeStep = document.getElementById('badge-step');
+      const badgeComps = document.getElementById('badge-comps');
+      const logEl = document.getElementById('sim-log');
+      const btnPrev = document.getElementById('btn-prev');
+      const btnNext = document.getElementById('btn-next');
+
+      if (badgeStep) badgeStep.textContent = `Paso ${simState.stepIndex} / ${simState.steps.length - 1}`;
+      if (badgeComps) badgeComps.textContent = `Comparaciones: ${step.comps}`;
+      if (btnPrev) btnPrev.disabled = simState.stepIndex === 0;
+      if (btnNext) btnNext.disabled = simState.stepIndex >= simState.steps.length - 1;
+
+      if (statusEl) {
+        statusEl.textContent = step.status;
+        statusEl.className = `sim-status-banner ${step.statusClass}`;
+      }
+
+      if (canvas) {
+        if (step.type === `array`) {
+          canvas.innerHTML = `<div class="sim-array-grid">` + simState.dataset.map((val, idx) => {
+            let cls = `sim-cell`;
+            let ptr = ``;
+            if (step.found === idx) {
+              cls += ` is-found`;
+              ptr = `ENCONTRADO`;
+            } else if (step.checking === idx) {
+              cls += ` is-checking`;
+              ptr = `i = ${idx}`;
+            } else if (step.discarded.includes(idx)) {
+              cls += ` is-discarded`;
+            }
+            return `
+              <div class="${cls}">
+                <span class="sim-cell__idx">[${idx}]</span>
+                <span class="sim-cell__val">${val}</span>
+                <span class="sim-cell__ptr">${ptr}</span>
+              </div>
+            `;
+          }).join(``) + `</div>`;
+        } else if (step.type === `binary`) {
+          canvas.innerHTML = `<div class="sim-array-grid">` + simState.dataset.map((val, idx) => {
+            let cls = `sim-cell`;
+            const markers = [];
+            if (idx === step.low) markers.push(`bajo`);
+            if (idx === step.mid) markers.push(`medio`);
+            if (idx === step.high) markers.push(`alto`);
+
+            if (step.found === idx) {
+              cls += ` is-found`;
+            } else if (step.mid === idx) {
+              cls += ` is-checking`;
+            } else if (idx >= step.low && idx <= step.high) {
+              cls += ` is-in-range`;
+            } else {
+              cls += ` is-discarded`;
+            }
+
+            return `
+              <div class="${cls}">
+                <span class="sim-cell__idx">[${idx}]</span>
+                <span class="sim-cell__val">${val}</span>
+                <span class="sim-cell__ptr">${markers.join(`/`)}</span>
+              </div>
+            `;
+          }).join(``) + `</div>`;
+        } else if (step.type === `hash-chain`) {
+          canvas.innerHTML = `<div class="hash-buckets">` + step.buckets.map((chain, bIdx) => {
+            let rowCls = `hash-row`;
+            if (bIdx === step.activeBucket) {
+              rowCls += step.foundNodeIdx !== -1 ? ` is-bucket-found` : ` is-bucket-active`;
+            }
+            const nodesHtml = chain.length === 0
+              ? `<span class="prose-muted" style="font-family: var(--font-label); font-size: 0.75rem;">NULL (vacía)</span>`
+              : chain.map((val, nIdx) => {
+                let nCls = `hash-node`;
+                if (bIdx === step.activeBucket && nIdx === step.foundNodeIdx) {
+                  nCls += ` is-node-found`;
+                } else if (bIdx === step.activeBucket && nIdx === step.activeNodeIdx) {
+                  nCls += ` is-node-checking`;
+                }
+                const arrow = nIdx < chain.length - 1 ? `<span class="ptr-arrow">&rarr;</span>` : `<span class="ptr-arrow">&rarr; NULL</span>`;
+                return `<span class="${nCls}">${val}</span>${arrow}`;
+              }).join(``);
+
+            return `
+              <div class="${rowCls}">
+                <span class="hash-idx">Cubeta [${bIdx}]</span>
+                <div class="hash-chain">${nodesHtml}</div>
+              </div>
+            `;
+          }).join(``) + `</div>`;
+        } else if (step.type === `hash-linear`) {
+          canvas.innerHTML = `<div class="sim-array-grid">` + step.slots.map((val, idx) => {
+            let cls = `sim-cell`;
+            let ptr = ``;
+            if (idx === step.foundIdx) {
+              cls += ` is-found`;
+              ptr = `HALLADO`;
+            } else if (idx === step.probeIdx) {
+              cls += val === null && step.statusClass === `is-not-found` ? ` is-miss` : ` is-checking`;
+              ptr = idx === step.startIdx ? `h(k)` : `sondeo`;
+            } else if (step.visited.includes(idx)) {
+              cls += ` is-discarded`;
+              ptr = `colisión`;
+            }
+            return `
+              <div class="${cls}">
+                <span class="sim-cell__idx">Ranura [${idx}]</span>
+                <span class="sim-cell__val">${val === null ? `—` : val}</span>
+                <span class="sim-cell__ptr">${ptr}</span>
+              </div>
+            `;
+          }).join(``) + `</div>`;
+        }
+      }
+
+      if (logEl) {
+        logEl.innerHTML = simState.steps.slice(0, simState.stepIndex + 1).map((s, idx) => {
+          const curCls = idx === simState.stepIndex ? `is-current` : ``;
+          return `<div class="sim-log-entry ${curCls}">${s.log}</div>`;
+        }).join(``);
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+    }
+
+    function stopPlayback() {
+      if (simState.timerId !== null) {
+        clearInterval(simState.timerId);
+        simState.timerId = null;
+      }
+      const playLbl = document.getElementById('btn-play-label');
+      if (playLbl) playLbl.textContent = `Reproducir`;
+    }
+
+    function rebuildSimulation() {
+      stopPlayback();
+      const algoSel = document.getElementById('sim-algo');
+      const targetInput = document.getElementById('sim-target');
+      const errEl = document.getElementById('sim-error');
+      const subEl = document.getElementById('stage-subtitle');
+
+      if (!algoSel || !targetInput) return;
+
+      const raw = targetInput.value.trim();
+      const target = Number(raw);
+      if (raw === `` || !Number.isInteger(target)) {
+        targetInput.classList.add(`has-error`);
+        if (errEl) errEl.textContent = `Ingresa un número entero válido para iniciar la búsqueda.`;
+        return false;
+      }
+
+      targetInput.classList.remove(`has-error`);
+      if (errEl) errEl.textContent = ``;
+
+      const algo = algoSel.value;
+      if (algo === `sequential`) {
+        simState.steps = buildSequentialSteps(simState.dataset, target);
+        if (subEl) subEl.textContent = `Arreglo de entrada · n = ${simState.dataset.length} · Búsqueda Secuencial`;
+      } else if (algo === `binary`) {
+        simState.steps = buildBinarySteps(simState.dataset, target);
+        if (subEl) subEl.textContent = `Arreglo ordenado · n = ${simState.dataset.length} · Búsqueda Binaria`;
+      } else if (algo === `hash-chain`) {
+        simState.steps = buildHashChainSteps(simState.dataset, target);
+        if (subEl) subEl.textContent = `Tabla Hash (m = ${HASH_CAPACITY}) · Resolución por Encadenamiento`;
+      } else {
+        simState.steps = buildHashLinearSteps(simState.dataset, target);
+        if (subEl) subEl.textContent = `Tabla Hash (m = ${HASH_CAPACITY}) · Resolución por Sondeo Lineal`;
+      }
+
+      simState.stepIndex = 0;
+      renderComparisonBars(simState.dataset, target);
+      renderSimStep();
+      return true;
+    }
+
+    function clearSimValidation() {
+      const targetInput = document.getElementById('sim-target');
+      const errEl = document.getElementById('sim-error');
+      if (targetInput) targetInput.classList.remove(`has-error`);
+      if (errEl) errEl.textContent = ``;
+      rebuildSimulation();
+    }
+
+    function onSimConfigChange() {
+      rebuildSimulation();
+    }
+
+    function onDatasetChange() {
+      const dsSel = document.getElementById('sim-dataset');
+      if (!dsSel) return;
+      const mode = dsSel.value;
+      if (mode === `preset`) {
+        simState.dataset = [...DATASETS.preset];
+      } else if (mode === `collisions`) {
+        simState.dataset = [...DATASETS.collisions];
+      } else {
+        simState.dataset = generateRandomSorted(11);
+      }
+      rebuildSimulation();
+    }
+
+    function onSpeedChange() {
+      const spSel = document.getElementById('sim-speed');
+      if (!spSel) return;
+      simState.speedMs = parseInt(spSel.value, 10) || 550;
+      if (simState.timerId !== null) {
+        stopPlayback();
+        togglePlay();
+      }
+    }
+
+    function stepForward() {
+      stopPlayback();
+      if (simState.stepIndex < simState.steps.length - 1) {
+        simState.stepIndex += 1;
+        renderSimStep();
+      }
+    }
+
+    function stepBackward() {
+      stopPlayback();
+      if (simState.stepIndex > 0) {
+        simState.stepIndex -= 1;
+        renderSimStep();
+      }
+    }
+
+    function resetSimulation() {
+      rebuildSimulation();
+    }
+
+    function togglePlay() {
+      if (simState.timerId !== null) {
+        stopPlayback();
+        return;
+      }
+      const targetInput = document.getElementById('sim-target');
+      if (targetInput && targetInput.classList.contains(`has-error`)) return;
+
+      if (simState.stepIndex >= simState.steps.length - 1) {
+        simState.stepIndex = 0;
+        renderSimStep();
+      }
+
+      const playLbl = document.getElementById('btn-play-label');
+      if (playLbl) playLbl.textContent = `Pausar`;
+
+      simState.timerId = setInterval(() => {
+        if (simState.stepIndex < simState.steps.length - 1) {
+          simState.stepIndex += 1;
+          renderSimStep();
+        } else {
+          stopPlayback();
+        }
+      }, simState.speedMs);
+    }
+
+    function quickSearch(val) {
+      const targetInput = document.getElementById('sim-target');
+      const dsSel = document.getElementById('sim-dataset');
+      if (dsSel && dsSel.value === `random`) {
+        dsSel.value = `preset`;
+        simState.dataset = [...DATASETS.preset];
+      }
+      if (targetInput) targetInput.value = String(val);
+      rebuildSimulation();
+      togglePlay();
+    }
+
+    // =========================================================================
+    // 3. C# CODE COPY HELPER
+    // =========================================================================
+    function copyCode(preId, btn) {
+      const pre = document.getElementById(preId);
+      if (!pre || !btn) return;
+      const text = pre.textContent || ``;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          const prev = btn.textContent;
+          btn.textContent = `¡Copiado!`;
+          setTimeout(() => { btn.textContent = prev; }, 1600);
+        }).catch(() => {
+          btn.textContent = `Selecciona el texto`;
+        });
+      } else {
+        btn.textContent = `Selecciona el texto`;
+      }
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', () => {
+      updateComplexityView(200);
+      rebuildSimulation();
+    });
+  </script>
+</body>
+</html>
